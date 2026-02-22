@@ -18,4 +18,8 @@ object CrimeLab {
     fun getCrimes(): List<Crime> = crimes
 
     fun getCrime(id: UUID): Crime? = crimes.find { it.id == id }
+
+    fun addCrime(crime: Crime) {
+        crimes += crime
+    }
 }

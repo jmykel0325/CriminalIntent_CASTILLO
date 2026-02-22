@@ -13,7 +13,7 @@ import android.widget.EditText;
 
 import androidx.fragment.app.Fragment;
 
-public class CrimeFragment extends Fragment {
+class CrimeFragmentJava extends Fragment {
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
@@ -22,7 +22,7 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCrime = new Crime();
+        mCrime = new Crime(java.util.UUID.randomUUID(), "", new java.util.Date(), false, false);
     }
 
     @Override

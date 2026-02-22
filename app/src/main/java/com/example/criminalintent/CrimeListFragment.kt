@@ -1,15 +1,20 @@
 package com.example.criminalintent
 
 import android.os.Bundle
+import android.view.Menu
 import android.view.LayoutInflater
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import java.text.DateFormat
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
@@ -17,6 +22,35 @@ class CrimeListFragment : Fragment() {
 
     private lateinit var crimeRecyclerView: RecyclerView
     private var adapter: CrimeAdapter? = null
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.fragment_crime_list, menu)
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    return when (menuItem.itemId) {
+                        R.id.new_crime -> {
+                            val crime = Crime()
+                            CrimeLab.addCrime(crime)
+                            updateUI()
+                            startActivity(CrimeActivity.newIntent(requireContext(), crime.id))
+                            true
+                        }
+
+                        else -> false
+                    }
+                }
+            },
+            viewLifecycleOwner,
+            Lifecycle.State.RESUMED,
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,6 +65,11 @@ class CrimeListFragment : Fragment() {
         updateUI()
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateUI()
     }
 
     private fun updateUI() {
@@ -57,12 +96,17 @@ class CrimeListFragment : Fragment() {
         fun bind(crime: Crime) {
             this.crime = crime
             titleTextView.text = crime.title
-            dateTextView.text = DateFormat.getDateTimeInstance().format(crime.date)
+            dateTextView.text = crime.date.toString()
+
             solvedImageView.visibility = if (crime.isSolved) View.VISIBLE else View.GONE
+            if (crime.isSolved) {
+                solvedImageView.setImageResource(R.drawable.handcuffs)
+            }
         }
 
         override fun onClick(v: View) {
             Toast.makeText(context, "${crime.title} clicked!", Toast.LENGTH_SHORT).show()
+            startActivity(CrimeActivity.newIntent(requireContext(), crime.id))
         }
     }
 
@@ -70,8 +114,8 @@ class CrimeListFragment : Fragment() {
         private lateinit var crime: Crime
         private val titleTextView: TextView = itemView.findViewById(R.id.crime_title)
         private val dateTextView: TextView = itemView.findViewById(R.id.crime_date)
-        private val solvedImageView: ImageView = itemView.findViewById(R.id.crime_solved)
         private val contactPoliceButton: Button = itemView.findViewById(R.id.contact_police_button)
+        private val solvedImageView: ImageView = itemView.findViewById(R.id.crime_solved)
 
         init {
             itemView.setOnClickListener(this)
@@ -80,8 +124,12 @@ class CrimeListFragment : Fragment() {
         fun bind(crime: Crime) {
             this.crime = crime
             titleTextView.text = crime.title
-            dateTextView.text = DateFormat.getDateTimeInstance().format(crime.date)
+            dateTextView.text = crime.date.toString()
+
             solvedImageView.visibility = if (crime.isSolved) View.VISIBLE else View.GONE
+            if (crime.isSolved) {
+                solvedImageView.setImageResource(R.drawable.handcuffs)
+            }
             contactPoliceButton.setOnClickListener {
                 Toast.makeText(
                     context,
@@ -93,6 +141,7 @@ class CrimeListFragment : Fragment() {
 
         override fun onClick(v: View) {
             Toast.makeText(context, "${crime.title} clicked!", Toast.LENGTH_SHORT).show()
+            startActivity(CrimeActivity.newIntent(requireContext(), crime.id))
         }
     }
 
