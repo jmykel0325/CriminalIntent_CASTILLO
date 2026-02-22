@@ -19,6 +19,7 @@ class CrimeFragment : Fragment() {
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
     private lateinit var solvedCheckBox: CheckBox
+    private lateinit var saveButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,7 +30,6 @@ class CrimeFragment : Fragment() {
             crime = existingCrime
         } else {
             crime = Crime(id = crimeId)
-            CrimeLab.addCrime(crime)
         }
 
         childFragmentManager.setFragmentResultListener(
@@ -54,6 +54,7 @@ class CrimeFragment : Fragment() {
         titleField = view.findViewById(R.id.crime_title)
         dateButton = view.findViewById(R.id.crime_date)
         solvedCheckBox = view.findViewById(R.id.crime_solved)
+        saveButton = view.findViewById(R.id.crime_save)
 
         titleField.setText(crime.title)
         titleField.addTextChangedListener(object : TextWatcher {
@@ -79,6 +80,11 @@ class CrimeFragment : Fragment() {
                 .show(childFragmentManager, DIALOG_DATE)
         }
         updateDate()
+
+        saveButton.setOnClickListener {
+            CrimeLab.saveCrime(crime)
+            requireActivity().finish()
+        }
 
         return view
     }

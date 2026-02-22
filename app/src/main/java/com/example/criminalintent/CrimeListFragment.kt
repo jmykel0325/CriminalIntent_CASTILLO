@@ -37,8 +37,6 @@ class CrimeListFragment : Fragment() {
                     return when (menuItem.itemId) {
                         R.id.new_crime -> {
                             val crime = Crime()
-                            CrimeLab.addCrime(crime)
-                            updateUI()
                             startActivity(CrimeActivity.newIntent(requireContext(), crime.id))
                             true
                         }
