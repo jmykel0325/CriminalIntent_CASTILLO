@@ -1,6 +1,7 @@
 package com.example.criminalintent;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,6 +11,15 @@ public class CrimeLab {
 
     private CrimeLab() {
         crimes = new ArrayList<>();
+
+        for (int i = 1; i <= 20; i++) {
+            Crime crime = new Crime();
+            crime.setTitle("Crime #" + i);
+            crime.setDate(new Date());
+            crime.setSolved(i % 2 == 0);
+            crime.setRequiresPolice(i % 3 == 0);
+            crimes.add(crime);
+        }
     }
 
     public static CrimeLab getInstance() {
