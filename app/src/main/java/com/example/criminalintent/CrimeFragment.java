@@ -8,37 +8,68 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-
 import androidx.fragment.app.Fragment;
+import java.util.UUID;
 
-class CrimeFragmentJava extends Fragment {
-    private Crime mCrime;
-    private EditText mTitleField;
-    private Button mDateButton;
-    private CheckBox mSolvedCheckBox;
+public class CrimeFragment extends Fragment {
+
+    private static final String ARG_CRIME_ID = "crime_id";
+    private static final String DIALOG_DATE = "DialogDate";
+
+    private Crime crime;
+    private EditText titleField;
+    private Button dateButton;
+    private CheckBox solvedCheckBox;
+    private Button saveButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCrime = new Crime(java.util.UUID.randomUUID(), "", new java.util.Date(), false, false);
+
+        UUID crimeId = (UUID) requireArguments().getSerializable(ARG_CRIME_ID);
+        if (crimeId == null) {
+            crimeId = UUID.randomUUID();
+        }
+
+        Crime existingCrime = CrimeLab.getCrime(crimeId);
+        if (existingCrime != null) {
+            crime = existingCrime;
+        } else {
+            crime = new Crime(crimeId);
+        }
+
+        getChildFragmentManager().setFragmentResultListener(
+            DatePickerFragment.REQUEST_KEY_DATE,
+            this,
+            (requestKey, result) -> {
+                java.util.Date selectedDate = (java.util.Date) result.getSerializable(DatePickerFragment.BUNDLE_KEY_DATE);
+                if (selectedDate != null) {
+                    crime.setDate(selectedDate);
+                    updateDate();
+                }
+            }
+        );
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime, container, false);
 
-        mTitleField = (EditText) view.findViewById(R.id.crime_title);
-        mTitleField.addTextChangedListener(new TextWatcher() {
+        titleField = view.findViewById(R.id.crime_title);
+        dateButton = view.findViewById(R.id.crime_date);
+        solvedCheckBox = view.findViewById(R.id.crime_solved);
+        saveButton = view.findViewById(R.id.crime_save);
+
+        titleField.setText(crime.getTitle());
+        titleField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mCrime.setTitle(s.toString());
+                crime.setTitle(s != null ? s.toString() : "");
             }
 
             @Override
@@ -46,18 +77,33 @@ class CrimeFragmentJava extends Fragment {
             }
         });
 
-        mDateButton = (Button) view.findViewById(R.id.crime_date);
-        mDateButton.setText(mCrime.getDate().toString());
-        mDateButton.setEnabled(false);
+        solvedCheckBox.setChecked(crime.isSolved());
+        solvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> crime.setSolved(isChecked));
 
-        mSolvedCheckBox = (CheckBox) view.findViewById(R.id.crime_solved);
-        mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mCrime.setSolved(isChecked);
-            }
+        dateButton.setOnClickListener(v -> 
+            DatePickerFragment
+                .newInstance(crime.getDate())
+                .show(getChildFragmentManager(), DIALOG_DATE)
+        );
+        updateDate();
+
+        saveButton.setOnClickListener(v -> {
+            CrimeLab.saveCrime(crime);
+            requireActivity().finish();
         });
 
         return view;
+    }
+
+    private void updateDate() {
+        dateButton.setText(crime.getDate().toString());
+    }
+
+    public static CrimeFragment newInstance(UUID crimeId) {
+        CrimeFragment fragment = new CrimeFragment();
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID, crimeId);
+        fragment.setArguments(args);
+        return fragment;
     }
 }
