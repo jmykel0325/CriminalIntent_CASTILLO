@@ -7,14 +7,11 @@ import androidx.fragment.app.Fragment;
 
 public class CrimeActivity extends SingleFragmentActivity {
     
-    private static final String EXTRA_CRIME_ID = "com.example.criminalintent.crime_id";
+    private static final String EXTRA_CRIME_ID = "com.bignerdranch.android.criminalintent.crime_id";
 
     @Override
     public Fragment createFragment() {
         UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
-        if (crimeId == null) {
-            crimeId = UUID.randomUUID();
-        }
         return CrimeFragment.newInstance(crimeId);
     }
 

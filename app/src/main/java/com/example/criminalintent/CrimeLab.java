@@ -1,16 +1,17 @@
 package com.example.criminalintent;
 
+import android.content.Context;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 public class CrimeLab {
-    private static CrimeLab instance;
-    private final List<Crime> crimes;
+    private static CrimeLab sCrimeLab;
+    private final List<Crime> mCrimes;
 
     private CrimeLab() {
-        crimes = new ArrayList<>();
+        mCrimes = new ArrayList<>();
 
         for (int i = 1; i <= 20; i++) {
             Crime crime = new Crime();
@@ -18,23 +19,23 @@ public class CrimeLab {
             crime.setDate(new Date());
             crime.setSolved(i % 1 == 0);
             crime.setRequiresPolice(i % 3 == 0);
-            crimes.add(crime);
+            mCrimes.add(crime);
         }
     }
 
-    public static CrimeLab getInstance() {
-        if (instance == null) {
-            instance = new CrimeLab();
+    public static CrimeLab get(Context context) {
+        if (sCrimeLab == null) {
+            sCrimeLab = new CrimeLab();
         }
-        return instance;
+        return sCrimeLab;
     }
 
-    public static List<Crime> getCrimes() {
-        return getInstance().crimes;
+    public List<Crime> getCrimes() {
+        return mCrimes;
     }
 
-    public static Crime getCrime(UUID id) {
-        for (Crime crime : getInstance().crimes) {
+    public Crime getCrime(UUID id) {
+        for (Crime crime : mCrimes) {
             if (crime.getId().equals(id)) {
                 return crime;
             }
@@ -42,18 +43,17 @@ public class CrimeLab {
         return null;
     }
 
-    public static void addCrime(Crime crime) {
-        getInstance().crimes.add(crime);
+    public void addCrime(Crime crime) {
+        mCrimes.add(crime);
     }
 
-    public static void saveCrime(Crime crime) {
-        CrimeLab lab = getInstance();
-        for (int i = 0; i < lab.crimes.size(); i++) {
-            if (lab.crimes.get(i).getId().equals(crime.getId())) {
-                lab.crimes.set(i, crime);
+    public void saveCrime(Crime crime) {
+        for (int i = 0; i < mCrimes.size(); i++) {
+            if (mCrimes.get(i).getId().equals(crime.getId())) {
+                mCrimes.set(i, crime);
                 return;
             }
         }
-        lab.crimes.add(crime);
+        mCrimes.add(crime);
     }
 }

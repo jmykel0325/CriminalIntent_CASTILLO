@@ -17,7 +17,7 @@ public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
 
-    private Crime crime;
+    private Crime mCrime;
     private EditText titleField;
     private Button dateButton;
     private CheckBox solvedCheckBox;
@@ -27,17 +27,8 @@ public class CrimeFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UUID crimeId = (UUID) requireArguments().getSerializable(ARG_CRIME_ID);
-        if (crimeId == null) {
-            crimeId = UUID.randomUUID();
-        }
-
-        Crime existingCrime = CrimeLab.getCrime(crimeId);
-        if (existingCrime != null) {
-            crime = existingCrime;
-        } else {
-            crime = new Crime(crimeId);
-        }
+        UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
 
         getChildFragmentManager().setFragmentResultListener(
             DatePickerFragment.REQUEST_KEY_DATE,
@@ -45,7 +36,7 @@ public class CrimeFragment extends Fragment {
             (requestKey, result) -> {
                 java.util.Date selectedDate = (java.util.Date) result.getSerializable(DatePickerFragment.BUNDLE_KEY_DATE);
                 if (selectedDate != null) {
-                    crime.setDate(selectedDate);
+                    mCrime.setDate(selectedDate);
                     updateDate();
                 }
             }
@@ -61,7 +52,7 @@ public class CrimeFragment extends Fragment {
         solvedCheckBox = view.findViewById(R.id.crime_solved);
         saveButton = view.findViewById(R.id.crime_save);
 
-        titleField.setText(crime.getTitle());
+        titleField.setText(mCrime.getTitle());
         titleField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -69,7 +60,7 @@ public class CrimeFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                crime.setTitle(s != null ? s.toString() : "");
+                mCrime.setTitle(s != null ? s.toString() : "");
             }
 
             @Override
@@ -77,18 +68,18 @@ public class CrimeFragment extends Fragment {
             }
         });
 
-        solvedCheckBox.setChecked(crime.isSolved());
-        solvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> crime.setSolved(isChecked));
+        solvedCheckBox.setChecked(mCrime.isSolved());
+        solvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
 
         dateButton.setOnClickListener(v -> 
             DatePickerFragment
-                .newInstance(crime.getDate())
+                .newInstance(mCrime.getDate())
                 .show(getChildFragmentManager(), DIALOG_DATE)
         );
         updateDate();
 
         saveButton.setOnClickListener(v -> {
-            CrimeLab.saveCrime(crime);
+            CrimeLab.get(getActivity()).saveCrime(mCrime);
             requireActivity().finish();
         });
 
@@ -96,7 +87,7 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updateDate() {
-        dateButton.setText(crime.getDate().toString());
+        dateButton.setText(mCrime.getDate().toString());
     }
 
     public static CrimeFragment newInstance(UUID crimeId) {
