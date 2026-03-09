@@ -3,6 +3,7 @@ package com.example.criminalintent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -19,6 +20,8 @@ public class CrimePagerActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
     private List<Crime> mCrimes;
+    private Button mJumpFirstButton;
+    private Button mJumpLastButton;
 
     public static Intent newIntent(Context packageContext, UUID crimeId) {
         Intent intent = new Intent(packageContext, CrimePagerActivity.class);
@@ -40,6 +43,8 @@ public class CrimePagerActivity extends AppCompatActivity {
         UUID crimeId = getIntent().getSerializableExtra(EXTRA_CRIME_ID, UUID.class);
 
         mViewPager = (ViewPager) findViewById(R.id.crime_view_pager);
+        mJumpFirstButton = findViewById(R.id.jump_first);
+        mJumpLastButton = findViewById(R.id.jump_last);
         mCrimes = CrimeLab.get(this).getCrimes();
         FragmentManager fragmentManager = getSupportFragmentManager();
 
@@ -64,6 +69,30 @@ public class CrimePagerActivity extends AppCompatActivity {
                 break;
             }
         }
+
+        mJumpFirstButton.setOnClickListener(v -> mViewPager.setCurrentItem(0));
+        mJumpLastButton.setOnClickListener(v -> mViewPager.setCurrentItem(mCrimes.size() - 1));
+
+        mViewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                updateJumpButtons(position);
+            }
+        });
+
+        updateJumpButtons(mViewPager.getCurrentItem());
+    }
+
+    private void updateJumpButtons(int position) {
+        boolean hasCrimes = mCrimes != null && !mCrimes.isEmpty();
+        if (!hasCrimes) {
+            mJumpFirstButton.setEnabled(false);
+            mJumpLastButton.setEnabled(false);
+            return;
+        }
+
+        mJumpFirstButton.setEnabled(position > 0);
+        mJumpLastButton.setEnabled(position < mCrimes.size() - 1);
     }
 
     @Override

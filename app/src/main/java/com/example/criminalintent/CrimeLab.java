@@ -7,13 +7,18 @@ import android.database.sqlite.SQLiteDatabase;
 import com.example.criminalintent.database.CrimeBaseHelper;
 import com.example.criminalintent.database.CrimeCursorWrapper;
 import com.example.criminalintent.database.CrimeDbSchema.CrimeTable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class CrimeLab {
     private static CrimeLab sCrimeLab;
     private final Context mContext;
     private final SQLiteDatabase mDatabase;
+
+    private final Map<UUID, Crime> mCrimeCache = new HashMap<>();
+    private boolean mCacheInitialized;
 
     private CrimeLab(Context context) {
         mContext = context.getApplicationContext();
@@ -36,17 +41,30 @@ public class CrimeLab {
         try {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                crimes.add(cursor.getCrime());
+                Crime crime = cursor.getCrime();
+                crimes.add(crime);
+                mCrimeCache.put(crime.getId(), crime);
                 cursor.moveToNext();
             }
         } finally {
             cursor.close();
         }
 
+        mCacheInitialized = true;
+
         return crimes;
     }
 
     public Crime getCrime(UUID id) {
+        Crime cachedCrime = mCrimeCache.get(id);
+        if (cachedCrime != null) {
+            return cachedCrime;
+        }
+
+        if (mCacheInitialized) {
+            return null;
+        }
+
         CrimeCursorWrapper cursor = queryCrimes(
                 CrimeTable.Cols.UUID + " = ?",
                 new String[] { id.toString() }
@@ -57,7 +75,9 @@ public class CrimeLab {
                 return null;
             }
             cursor.moveToFirst();
-            return cursor.getCrime();
+            Crime crime = cursor.getCrime();
+            mCrimeCache.put(crime.getId(), crime);
+            return crime;
         } finally {
             cursor.close();
         }
@@ -66,6 +86,7 @@ public class CrimeLab {
     public void addCrime(Crime crime) {
         ContentValues values = getContentValues(crime);
         mDatabase.insert(CrimeTable.NAME, null, values);
+        mCrimeCache.put(crime.getId(), crime);
     }
 
     public void updateCrime(Crime crime) {
@@ -75,6 +96,8 @@ public class CrimeLab {
         mDatabase.update(CrimeTable.NAME, values,
                 CrimeTable.Cols.UUID + " = ?",
                 new String[] { uuidString });
+
+        mCrimeCache.put(crime.getId(), crime);
     }
 
     public void deleteCrime(Crime crime) {
@@ -84,6 +107,8 @@ public class CrimeLab {
                 CrimeTable.Cols.UUID + " = ?",
                 new String[] { uuidString }
         );
+
+        mCrimeCache.remove(crime.getId());
     }
 
     public void saveCrime(Crime crime) {

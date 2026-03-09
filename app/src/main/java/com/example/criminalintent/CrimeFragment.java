@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 import androidx.core.app.ShareCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -38,6 +39,7 @@ public class CrimeFragment extends Fragment {
     private Button saveButton;
     private Button mSuspectButton;
     private Button mReportButton;
+    private TextView mStatusTextView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,6 +78,7 @@ public class CrimeFragment extends Fragment {
         saveButton = view.findViewById(R.id.crime_save);
         mSuspectButton = view.findViewById(R.id.crime_suspect);
         mReportButton = view.findViewById(R.id.crime_report);
+        mStatusTextView = view.findViewById(R.id.crime_status);
 
         titleField.setText(mCrime.getTitle());
         titleField.addTextChangedListener(new TextWatcher() {
@@ -94,15 +97,25 @@ public class CrimeFragment extends Fragment {
         });
 
         solvedCheckBox.setChecked(mCrime.isSolved());
-        solvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> mCrime.setSolved(isChecked));
+        solvedCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mCrime.setSolved(isChecked);
+            updateStatusText();
+        });
 
         mDateButton.setEnabled(true);
         updateDate();
+        updateStatusText();
         mDateButton.setOnClickListener(v -> {
-            FragmentManager manager = getParentFragmentManager();
-            DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-            dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-            dialog.show(manager, DIALOG_DATE);
+            if (isTablet()) {
+                FragmentManager manager = getParentFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+                dialog.show(manager, DIALOG_DATE);
+            } else {
+                Intent intent = new Intent(getActivity(), DatePickerActivity.class);
+                intent.putExtra(DatePickerFragment.EXTRA_DATE, mCrime.getDate());
+                startActivityForResult(intent, REQUEST_DATE);
+            }
         });
 
         saveButton.setOnClickListener(v -> {
@@ -173,6 +186,10 @@ public class CrimeFragment extends Fragment {
         CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 
+    private boolean isTablet() {
+        return getResources().getBoolean(R.bool.is_tablet);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
@@ -215,6 +232,11 @@ public class CrimeFragment extends Fragment {
 
     private void updateDate() {
         mDateButton.setText(mCrime.getDate().toString());
+    }
+
+    private void updateStatusText() {
+        String statusText = mCrime.isSolved() ? "crime close" : "status open";
+        mStatusTextView.setText(statusText);
     }
 
     public static CrimeFragment newInstance(UUID crimeId) {

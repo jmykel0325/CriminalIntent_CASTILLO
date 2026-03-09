@@ -148,6 +148,10 @@ public class CrimeListFragment extends Fragment {
             titleTextView.setText(crime.getTitle());
             dateTextView.setText(crime.getDate().toString());
 
+            int textColor = crime.isSolved() ? android.graphics.Color.GREEN : android.graphics.Color.BLACK;
+            titleTextView.setTextColor(textColor);
+            dateTextView.setTextColor(textColor);
+
             if (crime.isSolved()) {
                 solvedImageView.setVisibility(View.VISIBLE);
                 solvedImageView.setImageResource(R.drawable.handcuffs);
@@ -183,6 +187,10 @@ public class CrimeListFragment extends Fragment {
             mCrime = crime;
             titleTextView.setText(crime.getTitle());
             dateTextView.setText(crime.getDate().toString());
+
+            int textColor = crime.isSolved() ? android.graphics.Color.GREEN : android.graphics.Color.BLACK;
+            titleTextView.setTextColor(textColor);
+            dateTextView.setTextColor(textColor);
 
             if (crime.isSolved()) {
                 solvedImageView.setVisibility(View.VISIBLE);

@@ -35,6 +35,9 @@
             android:name=".CrimePagerActivity"
             android:parentActivityName=".CrimeListActivity"
             android:exported="false" />
+        <activity
+            android:name=".DatePickerActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

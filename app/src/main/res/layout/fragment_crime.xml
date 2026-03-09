@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:orientation="vertical">
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <TextView
         style="?android:listSeparatorTextViewStyle"
@@ -35,6 +39,13 @@
         android:layout_height="wrap_content"
         android:text="@string/crime_solved_label" />
 
+    <TextView
+        android:id="@+id/crime_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textStyle="bold" />
+
     <Button
         android:id="@+id/crime_save"
         android:layout_width="match_parent"
@@ -53,4 +64,6 @@
         android:layout_height="wrap_content"
         android:text="@string/crime_report_text" />
 
-</LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
